@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tiempo real | OVA Sistemas Operativos</title><link rel="stylesheet" href="styles.css"></head><body data-gate>
+<div id="progreso"></div>
+<header class="top"><div class="in"><a href="index.html"><img src="Logo1.png" alt="Universidad Simón Bolívar"></a>
+<nav aria-label="Principal"><a href="index.html">Inicio</a><a href="evaluacion.html">Test inicial</a><a href="tiempo-real.html" aria-current="page">Tiempo real</a><a href="embebidos.html">Sistemas embebidos</a><a href="tolerancia.html">Tolerancia a fallos</a></nav></div></header>
+<main><h1>Sistemas de tiempo real</h1>
+<div class="obj"><strong>Objetivo:</strong> distinguir tiempo real estricto y flexible, y comprender cómo se planifica la CPU para cumplir plazos.</div>
+<p>En un sistema de tiempo real no basta con que el resultado sea correcto: también debe llegar a tiempo. Se emplean como dispositivo de control en aplicaciones dedicadas, donde unos sensores entregan datos al computador y este debe analizarlos y ajustar los controles dentro de un límite de tiempo estricto.</p>
+<h3>¿Dónde los encontramos?</h3>
+<ul><li>Control de procesos industriales y robots.</li><li>Experimentos científicos y sistemas de imágenes médicas.</li><li>Sistemas de inyección de combustible y frenos de automóviles.</li><li>Aviónica, multimedia y realidad virtual.</li></ul>
+<h2>Dos tipos de sistemas</h2>
+<div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-p="hard">Estricto (hard)</button><button role="tab" aria-selected="false" data-p="soft">Flexible (soft)</button></div>
+<div class="panel" id="hard"><p>Garantiza que las tareas críticas se completen dentro de su plazo. Un resultado tardío se considera tan inútil como no tenerlo. Suele ejecutarse en dispositivos con poco almacenamiento secundario y con el software en memoria de solo lectura (ROM), y por eso rara vez convive con las funciones de un sistema de tiempo compartido.</p></div>
+<div class="panel" id="soft" hidden><p>Da prioridad a un proceso crítico sobre los demás, pero no ofrece garantía absoluta. Sirve en multimedia y realidad virtual, donde un retraso degrada la calidad sin causar un fallo grave. Puede mezclarse con otros tipos de sistemas, aunque no es apropiado para el control industrial o la robótica, que exigen plazos estrictos.</p></div>
+<figure><svg style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" font-family="Segoe UI, Arial, sans-serif" role="img" aria-labelledby="trtipos_t trtipos_d">
+<title id="trtipos_t">Valor del resultado según el momento de entrega</title>
+<desc id="trtipos_d">A la izquierda, en tiempo real estricto el valor del resultado cae a cero al pasar el plazo. A la derecha, en tiempo real flexible el valor decrece poco a poco.</desc>
+<rect width="760" height="300" fill="#fff"/>
+<g font-size="16" font-weight="700" fill="#0f4d26"><text x="40" y="28">Tiempo real estricto (hard)</text><text x="410" y="28">Tiempo real flexible (soft)</text></g>
+<g stroke="#58595b" stroke-width="2" fill="none"><path d="M50 60V230H350"/><path d="M420 60V230H720"/></g>
+<g font-size="13" fill="#58595b"><text x="46" y="56" text-anchor="end">Valor</text><text x="350" y="250" text-anchor="end">Tiempo →</text><text x="416" y="56" text-anchor="end">Valor</text><text x="720" y="250" text-anchor="end">Tiempo →</text></g>
+<g stroke="#b3261e" stroke-width="2" stroke-dasharray="6 5"><path d="M220 60V230"/><path d="M590 60V230"/></g>
+<g font-size="13" font-weight="700" fill="#b3261e" text-anchor="middle"><text x="220" y="262">Plazo</text><text x="590" y="262">Plazo</text></g>
+<path d="M50 90H220V230H340" fill="none" stroke="#1b7f3b" stroke-width="4"/>
+<path d="M420 90H590L710 215" fill="none" stroke="#1b7f3b" stroke-width="4"/>
+<g font-size="13" fill="#1d2a21"><text x="60" y="80">Valor completo</text><text x="232" y="150">Resultado tardío:</text><text x="232" y="168">valor nulo</text>
+<text x="430" y="80">Valor completo</text><text x="560" y="130" text-anchor="end">Se degrada</text><text x="560" y="147" text-anchor="end">la calidad</text></g>
+<text x="40" y="288" font-size="13" fill="#58595b">Ej.: frenos ABS, control de un reactor</text><text x="410" y="288" font-size="13" fill="#58595b">Ej.: vídeo en streaming, realidad virtual</text>
+</svg><figcaption>Figura 1. Valor del resultado según el momento de entrega: caída brusca (estricto) frente a degradación gradual (flexible).</figcaption></figure>
+<div class="tablewrap"><table><thead><tr><th></th><th>Estricto (hard)</th><th>Flexible (soft)</th></tr></thead><tbody>
+<tr><th>Plazo incumplido</th><td>Fallo del sistema</td><td>Menor calidad del servicio</td></tr>
+<tr><th>Garantía</th><td>Absoluta</td><td>Solo prioridad al proceso crítico</td></tr>
+<tr><th>Ejemplos</th><td>Frenos ABS, control industrial</td><td>Vídeo, juegos, realidad virtual</td></tr></tbody></table></div>
+<p class="cita">Fuente: Silberschatz et al. (2006), capítulo «Sistemas de tiempo real», apartado de características.</p>
+<h2>¿Qué necesita su sistema operativo?</h2>
+<details open><summary>Núcleo expulsivo con prioridades</summary><p>Un proceso crítico debe poder quitarle la CPU a otro de menor prioridad en cuanto lo necesite. Por eso estos sistemas usan planificación basada en prioridades con expulsión.</p></details>
+<details><summary>Latencia de interrupción</summary><p>Es el tiempo que pasa desde que llega una interrupción hasta que empieza a ejecutarse la rutina que la atiende. Debe estar acotada y ser lo más corta posible.</p></details>
+<details><summary>Latencia de despacho</summary><p>Es el tiempo que necesita el despachador para detener un proceso e iniciar otro. Para reducirla, el núcleo debe ser expulsivo y liberar rápido los recursos que retiene un proceso de baja prioridad.</p></details>
+<details><summary>Inversión de prioridad</summary><p>Ocurre cuando un proceso de alta prioridad espera un recurso que tiene uno de baja prioridad. Se resuelve con el protocolo de herencia de prioridades: el proceso de baja prioridad hereda temporalmente la prioridad alta hasta liberar el recurso.</p></details>
+<details><summary>Gestión de memoria</summary><p>Los fallos de página hacen impredecible el tiempo de acceso, por lo que muchos sistemas de tiempo real evitan la memoria virtual o bloquean en memoria las páginas críticas.</p></details>
+<p class="cita">Fuente: Silberschatz et al. (2006), capítulo «Sistemas de tiempo real», apartado de implementación.</p>
+<h2>Planificación de la CPU</h2>
+<p>Un proceso periódico requiere la CPU cada período <em>p</em>, durante un tiempo de procesamiento <em>t</em>, y debe terminar antes de su plazo <em>d</em>. Su utilización de CPU es <em>t/p</em>, y la del sistema es la suma de las utilizaciones de todos los procesos.</p>
+<details><summary>Tasa monótona (rate-monotonic)</summary><p>Asigna prioridades estáticas en proporción inversa al período: a menor período, mayor prioridad. Con N procesos garantiza los plazos si la utilización de CPU no supera N(2<sup>1/N</sup> − 1). Con dos procesos el límite es cerca del 83 %, y cae hacia el 69 % cuando N crece.</p></details>
+<details><summary>Primero el plazo más próximo (EDF)</summary><p>Asigna prioridades de forma dinámica: cuanto más cercano el plazo, mayor la prioridad. En teoría puede cumplir todos los plazos mientras la utilización no pase del 100 %.</p></details>
+<details><summary>Reparto proporcional</summary><p>Reparte T participaciones entre las aplicaciones; una aplicación con N participaciones recibe N/T del tiempo de procesador.</p></details>
+<h3>Ejemplo comparativo</h3>
+<p>Sean P1 con período 50 y tiempo 25, y P2 con período 80 y tiempo 35. La utilización total es 25/50 + 35/80 ≈ 94 %, superior al límite de tasa monótona para dos procesos (≈ 83 %). Con tasa monótona, P1 tiene mayor prioridad y expulsa a P2 en t = 50, de modo que P2 solo alcanza 30 de sus 35 unidades en t = 80 y pierde el plazo. Con EDF, en t = 50 el plazo de P2 (80) es más próximo que el nuevo de P1 (100), así que P2 termina en t = 60 y se cumplen todos los plazos.</p>
+<figure><svg style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" font-family="Segoe UI, Arial, sans-serif" role="img" aria-labelledby="trplanificacion_t trplanificacion_d">
+<title id="trplanificacion_t">Planificación con tasa monótona frente a EDF</title>
+<desc id="trplanificacion_d">Diagrama de Gantt con dos procesos: P1 con período 50 y tiempo 25, P2 con período 80 y tiempo 35. Con tasa monótona P2 pierde su plazo en t=80; con EDF se cumplen todos los plazos.</desc>
+<rect width="760" height="330" fill="#fff"/>
+<text x="20" y="24" font-size="15" font-weight="700" fill="#b3261e">Tasa monótona: P2 pierde su plazo en t = 80</text>
+<g stroke="#fff" stroke-width="2" font-size="14" font-weight="700" text-anchor="middle">
+<rect x="100" y="44" width="150" height="36" fill="#1b7f3b"/><text x="175" y="67" fill="#fff" stroke="none">P1</text>
+<rect x="250" y="44" width="150" height="36" fill="#e0a526"/><text x="325" y="67" fill="#1d2a21" stroke="none">P2</text>
+<rect x="400" y="44" width="150" height="36" fill="#1b7f3b"/><text x="475" y="67" fill="#fff" stroke="none">P1</text>
+<rect x="550" y="44" width="30" height="36" fill="#e0a526"/></g>
+<path d="M580 36V92" stroke="#b3261e" stroke-width="3"/><text x="592" y="66" font-size="13" font-weight="700" fill="#b3261e">✗ P2 lleva 30 de 35</text>
+<g stroke="#58595b" stroke-width="1.5"><path d="M100 90H700"/></g>
+<g font-size="12" fill="#58595b" text-anchor="middle"><text x="100" y="108">0</text><text x="250" y="108">25</text><text x="400" y="108">50</text><text x="550" y="108">75</text><text x="580" y="124" fill="#b3261e" font-weight="700">80</text><text x="700" y="108">100</text></g>
+<text x="20" y="168" font-size="15" font-weight="700" fill="#1b7f3b">EDF: todos los plazos se cumplen</text>
+<g stroke="#fff" stroke-width="2" font-size="14" font-weight="700" text-anchor="middle">
+<rect x="100" y="188" width="150" height="36" fill="#1b7f3b"/><text x="175" y="211" fill="#fff" stroke="none">P1</text>
+<rect x="250" y="188" width="210" height="36" fill="#e0a526"/><text x="355" y="211" fill="#1d2a21" stroke="none">P2</text>
+<rect x="460" y="188" width="150" height="36" fill="#1b7f3b"/><text x="535" y="211" fill="#fff" stroke="none">P1</text>
+<rect x="610" y="188" width="90" height="36" fill="#e0a526"/><text x="655" y="211" fill="#1d2a21" stroke="none">P2</text></g>
+<g stroke="#58595b" stroke-width="1.5"><path d="M100 234H700"/></g>
+<g font-size="12" fill="#58595b" text-anchor="middle"><text x="100" y="252">0</text><text x="250" y="252">25</text><text x="400" y="252">50</text><text x="460" y="252">60</text><text x="580" y="252">80</text><text x="610" y="252">85</text><text x="700" y="252">100</text></g>
+<g stroke="#0f4d26" stroke-width="2" stroke-dasharray="5 4"><path d="M400 180V236"/><path d="M580 180V236"/><path d="M700 180V236"/></g>
+<text x="400" y="176" font-size="12" fill="#0f4d26" text-anchor="middle">plazo P1</text><text x="580" y="176" font-size="12" fill="#0f4d26" text-anchor="middle">plazo P2</text><text x="700" y="176" font-size="12" fill="#0f4d26" text-anchor="middle">plazo P1</text>
+<g font-size="13" fill="#1d2a21"><rect x="20" y="288" width="16" height="16" fill="#1b7f3b"/><text x="42" y="301">P1: período 50, tiempo 25</text><rect x="260" y="288" width="16" height="16" fill="#e0a526"/><text x="282" y="301">P2: período 80, tiempo 35</text><text x="520" y="301" fill="#58595b">Unidades de tiempo arbitrarias</text></g>
+</svg><figcaption>Figura 2. Mismos procesos planificados con tasa monótona y con EDF.</figcaption></figure>
+<p class="cita">Fuente: Silberschatz et al. (2006), capítulo «Sistemas de tiempo real», apartado de planificación de la CPU en tiempo real.</p>
+<h2>Glosario</h2>
+<div class="tablewrap"><table><tbody>
+<tr><th>Plazo (<em>d</em>)</th><td>Instante límite en que debe terminar una tarea.</td></tr>
+<tr><th>Período (<em>p</em>)</th><td>Cada cuánto tiempo se repite una tarea periódica.</td></tr>
+<tr><th>Tiempo de procesamiento (<em>t</em>)</th><td>CPU que necesita la tarea en cada ejecución.</td></tr>
+<tr><th>Utilización</th><td>Fracción de CPU que usa un proceso (t/p) o todos (suma).</td></tr>
+<tr><th>Expulsión</th><td>Quitarle la CPU a un proceso para dársela a otro más urgente.</td></tr>
+<tr><th>Despachador</th><td>Componente que entrega la CPU al proceso elegido.</td></tr>
+<tr><th>Latencia</th><td>Tiempo entre un evento y el inicio de su atención.</td></tr></tbody></table></div>
+<div class="obj"><h3 style="margin-top:0">Ideas clave</h3><ul><li>En tiempo real, un resultado correcto pero tardío puede ser inútil.</li><li>El estricto garantiza plazos; el flexible solo da prioridad.</li><li>Tasa monótona usa prioridades estáticas; EDF, dinámicas.</li><li>Las latencias de interrupción y de despacho deben mantenerse acotadas.</li></ul></div>
+<div class="nextprev"><a class="btn s" href="index.html">← Inicio</a><a class="btn s" href="embebidos.html">Sistemas embebidos →</a></div></main>
+<footer><div class="in"><strong>Referencia (APA 7.ª):</strong> Silberschatz, A., Galvin, P. B., &amp; Gagne, G. (2006). <em>Fundamentos de sistemas operativos</em> (7.ª ed.). McGraw-Hill.<br>Universidad Simón Bolívar · Barranquilla y Cúcuta, Colombia · Programa de Ingeniería de Sistemas · Sistemas Operativos</div></footer>
+<script src="main.js"></script></body></html>

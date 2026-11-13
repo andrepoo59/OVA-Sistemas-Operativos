@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tolerancia a fallos | OVA Sistemas Operativos</title><link rel="stylesheet" href="styles.css"></head><body data-gate>
+<div id="progreso"></div>
+<header class="top"><div class="in"><a href="index.html"><img src="Logo1.png" alt="Universidad Simón Bolívar"></a>
+<nav aria-label="Principal"><a href="index.html">Inicio</a><a href="evaluacion.html">Test inicial</a><a href="tiempo-real.html">Tiempo real</a><a href="embebidos.html">Sistemas embebidos</a><a href="tolerancia.html" aria-current="page">Tolerancia a fallos</a></nav></div></header>
+<main><h1>Tolerancia a fallos</h1>
+<div class="obj"><strong>Objetivo:</strong> describir cómo un sistema distribuido detecta, reconfigura y se recupera de un fallo.</div>
+<p>Un sistema tolerante a fallos sigue funcionando pese a ellos, aunque sea con menos capacidad (degradación elegante). En un sistema distribuido hay más piezas que pueden fallar, y por eso es indispensable planificar cómo reaccionar.</p>
+<h3>¿Qué puede fallar?</h3>
+<ul><li><strong>Fallo de un enlace:</strong> la conexión entre dos sitios deja de funcionar.</li><li><strong>Fallo de un sitio:</strong> una computadora completa se detiene.</li><li><strong>Pérdida de mensajes:</strong> la información se pierde en la red.</li><li><strong>Partición de la red:</strong> varios fallos dejan grupos de sitios aislados entre sí.</li></ul>
+<p class="cita">Fuente: Silberschatz et al. (2006), capítulo de estructuras de sistemas distribuidos, apartado «Robustez».</p>
+<h2>Las tres etapas</h2>
+<figure><svg style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230" font-family="Segoe UI, Arial, sans-serif" role="img" aria-labelledby="tfetapas_t tfetapas_d">
+<title id="tfetapas_t">Etapas de la robustez ante fallos</title>
+<desc id="tfetapas_d">Tras un fallo en la operación normal, el sistema pasa por detección, reconfiguración y recuperación para volver a la operación normal.</desc>
+<defs><marker id="tfetapas_a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0f4d26"/></marker></defs>
+<rect width="760" height="230" fill="#fff"/>
+<g font-size="15" font-weight="700" text-anchor="middle">
+<rect x="5" y="50" width="145" height="64" rx="10" fill="#e8f3ea" stroke="#1b7f3b" stroke-width="2"/><text x="77" y="87" fill="#0f4d26">Operación normal</text>
+<rect x="206" y="50" width="145" height="64" rx="10" fill="#1b7f3b"/><text x="278" y="87" fill="#fff">1. Detección</text>
+<rect x="407" y="50" width="145" height="64" rx="10" fill="#1b7f3b"/><text x="479" y="87" fill="#fff">2. Reconfiguración</text>
+<rect x="608" y="50" width="145" height="64" rx="10" fill="#1b7f3b"/><text x="680" y="87" fill="#fff">3. Recuperación</text></g>
+<g stroke="#0f4d26" stroke-width="3" fill="none"><path d="M150 82H204" marker-end="url(#tfetapas_a)"/><path d="M351 82H405" marker-end="url(#tfetapas_a)"/><path d="M552 82H606" marker-end="url(#tfetapas_a)"/><path d="M680 160V178H77V116" marker-end="url(#tfetapas_a)" stroke-dasharray="6 5"/></g>
+<text x="178" y="42" font-size="13" font-weight="700" fill="#b3261e" text-anchor="middle">Fallo</text>
+<g font-size="12" fill="#1d2a21" text-anchor="middle"><text x="278" y="134">Mensajes «estoy vivo»</text><text x="278" y="150">y tiempo de espera</text><text x="479" y="134">Avisar a los sitios y</text><text x="479" y="150">dejar de usar lo caído</text><text x="680" y="134">Reintegrar el sitio o</text></g>
+<text x="378" y="200" font-size="13" fill="#58595b" text-anchor="middle">Vuelve a la operación normal</text><text x="680" y="150" font-size="12" fill="#1d2a21" text-anchor="middle">enlace reparado</text>
+</svg><figcaption>Figura 1. Ciclo de respuesta ante un fallo.</figcaption></figure>
+<div class="tabs"><button aria-selected="true" data-p="d">Detección</button><button aria-selected="false" data-p="r">Reconfiguración</button><button aria-selected="false" data-p="c">Recuperación</button></div>
+<div class="panel" id="d"><p>Los sitios intercambian mensajes periódicos «estoy vivo». Si uno no llega antes del tiempo de espera, se sospecha un fallo. El sitio que espera no puede distinguir si cayó el sitio remoto o el enlace. Puede enviar un mensaje «¿estás vivo?» y probar una ruta alterna: si recibe respuesta por otra ruta, falló el enlace; si no, el sitio, o todas las rutas, pueden haber caído.</p></div>
+<div class="panel" id="r" hidden><p>Se informa a los demás sitios del fallo y se deja de usar el recurso caído. Si el sitio fallido era un coordinador, hay que elegir uno nuevo. Si la caída de un enlace parte la red en grupos aislados, cada grupo debe seguir con lo que pueda hacer sin el resto.</p></div>
+<div class="panel" id="c" hidden><p>Cuando el enlace o el sitio vuelve a funcionar, se notifica a los demás y se reintegra al sistema de forma ordenada. El sitio recuperado debe ponerse al día con lo ocurrido durante su ausencia antes de volver a participar.</p></div>
+<figure><svg style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 350" font-family="Segoe UI, Arial, sans-serif" role="img" aria-labelledby="tfheartbeat_t tfheartbeat_d">
+<title id="tfheartbeat_t">Detección de un fallo con mensajes «estoy vivo»</title>
+<desc id="tfheartbeat_d">El sitio B envía mensajes periódicos al sitio A. Tras un fallo de B, el mensaje esperado no llega, vence el tiempo de espera y A sospecha del fallo.</desc>
+<defs><marker id="tfheartbeat_a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0f4d26"/></marker><marker id="tfheartbeat_g" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#58595b"/></marker></defs>
+<rect width="760" height="350" fill="#fff"/>
+<g font-size="15" font-weight="700" fill="#fff" text-anchor="middle"><rect x="90" y="10" width="120" height="34" rx="6" fill="#1b7f3b"/><text x="150" y="33">Sitio A</text><rect x="550" y="10" width="120" height="34" rx="6" fill="#1b7f3b"/><text x="610" y="33">Sitio B</text></g>
+<g stroke="#58595b" stroke-width="2" stroke-dasharray="5 5"><path d="M150 44V335"/><path d="M610 44V335"/></g>
+<g stroke="#0f4d26" stroke-width="2.5" fill="none"><path d="M608 85H152" marker-end="url(#tfheartbeat_a)"/><path d="M608 125H152" marker-end="url(#tfheartbeat_a)"/><path d="M608 165H152" marker-end="url(#tfheartbeat_a)"/></g>
+<g font-size="13" fill="#0f4d26" text-anchor="middle"><text x="380" y="78">«estoy vivo»</text><text x="380" y="118">«estoy vivo»</text><text x="380" y="158">«estoy vivo»</text></g>
+<g stroke="#b3261e" stroke-width="4"><path d="M596 185l28 28M624 185l-28 28"/></g>
+<text x="634" y="204" font-size="13" font-weight="700" fill="#b3261e">Falla B</text>
+<path d="M500 250H152" stroke="#58595b" stroke-width="2" stroke-dasharray="6 5" fill="none" marker-end="url(#tfheartbeat_g)"/><text x="330" y="243" font-size="13" fill="#58595b" text-anchor="middle">mensaje esperado: no llega</text>
+<path d="M130 170V262" stroke="#b3261e" stroke-width="3" fill="none"/><text x="122" y="206" font-size="12" fill="#b3261e" text-anchor="end">Tiempo</text><text x="122" y="222" font-size="12" fill="#b3261e" text-anchor="end">de espera</text>
+<path d="M152 292H606" stroke="#58595b" stroke-width="2" stroke-dasharray="6 5" fill="none" marker-end="url(#tfheartbeat_g)"/><text x="380" y="285" font-size="13" fill="#58595b" text-anchor="middle">«¿estás vivo?» (sin respuesta)</text>
+<rect x="170" y="305" width="440" height="30" rx="15" fill="#fbe9e7"/><text x="390" y="325" font-size="13" font-weight="700" fill="#b3261e" text-anchor="middle">A sospecha de un fallo del sitio B o del enlace</text>
+</svg><figcaption>Figura 2. Detección con mensajes periódicos y tiempo de espera.</figcaption></figure>
+<h2>Un ejemplo paso a paso</h2>
+<details open><summary>Tres sitios con un coordinador</summary><p>Los sitios A, B y C se reparten el trabajo y B actúa como coordinador. Todos intercambian mensajes «estoy vivo» cada pocos segundos.</p></details>
+<details><summary>B deja de responder</summary><p>A no recibe el mensaje de B antes del tiempo de espera, lo consulta y no obtiene respuesta ni por una ruta alterna. Sospecha que B falló.</p></details>
+<details><summary>El sistema se reconfigura</summary><p>A y C se avisan del fallo, dejan de enviar trabajo a B y eligen un nuevo coordinador. El servicio continúa, quizá más lento: eso es degradación elegante.</p></details>
+<details><summary>B vuelve</summary><p>Al reiniciar, B avisa a los demás, se pone al día y se reintegra al sistema.</p></details>
+<h2>Cómo se refuerza la tolerancia</h2>
+<ul><li><strong>Redundancia:</strong> tener varios sitios o enlaces capaces de hacer el mismo trabajo.</li><li><strong>Replicación:</strong> guardar copias de los datos en sitios distintos.</li><li><strong>Degradación elegante:</strong> seguir dando servicio con menor capacidad.</li></ul>
+<p class="cita">Fuente: Silberschatz et al. (2006), capítulo de estructuras de sistemas distribuidos, apartado «Robustez».</p>
+<h2>Resumen por tipo de fallo</h2>
+<h3>¿Qué hace el sistema ante cada fallo?</h3>
+<div class="tablewrap"><table><thead><tr><th>Fallo</th><th>Cómo se nota</th><th>Respuesta del sistema</th></tr></thead><tbody>
+<tr><th>Enlace caído</th><td>No llegan mensajes, pero el sitio sigue vivo por otra ruta</td><td>Usar una ruta alterna y actualizar las tablas de rutas</td></tr>
+<tr><th>Sitio caído</th><td>No responde por ninguna ruta</td><td>Avisar a los demás, dejar de usarlo y reasignar su trabajo</td></tr>
+<tr><th>Coordinador caído</th><td>Nadie dirige una función compartida</td><td>Elegir un nuevo coordinador</td></tr>
+<tr><th>Pérdida de mensajes</th><td>Falta una respuesta esperada</td><td>Esperar, reenviar y, si persiste, tratarlo como fallo</td></tr>
+<tr><th>Partición de la red</th><td>Grupos de sitios aislados</td><td>Cada grupo opera con lo que tiene hasta reunirse de nuevo</td></tr></tbody></table></div>
+<h2>Glosario</h2>
+<div class="tablewrap"><table><tbody>
+<tr><th>Sitio</th><td>Cada computadora o nodo de un sistema distribuido.</td></tr>
+<tr><th>Enlace</th><td>Conexión de comunicación entre dos sitios.</td></tr>
+<tr><th>Tiempo de espera</th><td>Plazo máximo para recibir un mensaje antes de sospechar un fallo.</td></tr>
+<tr><th>Coordinador</th><td>Sitio que dirige una función compartida por varios.</td></tr>
+<tr><th>Redundancia</th><td>Componentes extra capaces de asumir el trabajo de uno que falla.</td></tr>
+<tr><th>Degradación elegante</th><td>Seguir funcionando con prestaciones reducidas.</td></tr></tbody></table></div>
+<div class="obj"><h3 style="margin-top:0">Ideas clave</h3><ul><li>La robustez ante fallos tiene tres tareas: detectar, reconfigurar y recuperar.</li><li>Los mensajes «estoy vivo» y el tiempo de espera detectan fallos.</li><li>No siempre se distingue un fallo de sitio de uno de enlace.</li><li>Tolerar fallos puede significar funcionar con menos capacidad.</li></ul></div>
+<div class="nextprev"><a class="btn s" href="embebidos.html">← Sistemas embebidos</a><a class="btn s" href="index.html">Volver al inicio</a></div></main>
+<footer><div class="in"><strong>Referencia (APA 7.ª):</strong> Silberschatz, A., Galvin, P. B., &amp; Gagne, G. (2006). <em>Fundamentos de sistemas operativos</em> (7.ª ed.). McGraw-Hill.<br>Universidad Simón Bolívar · Barranquilla y Cúcuta, Colombia · Programa de Ingeniería de Sistemas · Sistemas Operativos</div></footer>
+<script src="main.js"></script></body></html>
